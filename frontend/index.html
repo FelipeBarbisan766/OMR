@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OMR Local</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 2rem auto; max-width: 880px; line-height: 1.5; }
+      h1 { margin-bottom: .2rem; }
+      .card { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; margin-top: 1rem; }
+      label { display: block; margin-top: .6rem; }
+      button { margin-top: .8rem; }
+      code { background: #f4f4f4; padding: .1rem .3rem; border-radius: 4px; }
+      pre { background: #111; color: #f4f4f4; padding: .8rem; border-radius: 6px; overflow-x: auto; }
+    </style>
+  </head>
+  <body>
+    <h1>OMR desktop local</h1>
+    <p>Flask roda apenas em <code>localhost:5000</code>, sem servidor externo.</p>
+
+    <div class="card">
+      <h2>Gerar gabarito (PDF)</h2>
+      <label>ID do aluno <input id="studentId" value="ALUNO-001" /></label>
+      <label>Questões <input id="numQuestions" type="number" value="10" min="1" max="100" /></label>
+      <button id="btnGenerate">Gerar</button>
+    </div>
+
+    <div class="card">
+      <h2>Processar imagem</h2>
+      <label>Foto/scan <input id="imageFile" type="file" accept="image/*" /></label>
+      <button id="btnProcess">Detectar respostas</button>
+    </div>
+
+    <pre id="output">Pronto.</pre>
+
+    <script>
+      const output = document.getElementById("output");
+      const print = (value) => output.textContent = JSON.stringify(value, null, 2);
+
+      document.getElementById("btnGenerate").addEventListener("click", async () => {
+        const student_id = document.getElementById("studentId").value;
+        const num_questions = Number(document.getElementById("numQuestions").value);
+        const response = await fetch("/api/generate-sheet", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ student_id, num_questions })
+        });
+        print(await response.json());
+      });
+
+      document.getElementById("btnProcess").addEventListener("click", async () => {
+        const file = document.getElementById("imageFile").files[0];
+        if (!file) return print({ error: "Selecione um arquivo de imagem." });
+
+        const form = new FormData();
+        form.append("image", file);
+        form.append("num_questions", document.getElementById("numQuestions").value);
+
+        const response = await fetch("/api/process-image", { method: "POST", body: form });
+        print(await response.json());
+      });
+    </script>
+  </body>
+</html>

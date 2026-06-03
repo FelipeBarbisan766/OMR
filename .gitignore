@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+backend/database.db
+uploads/*
+!uploads/.gitkeep
+outputs/*
+!outputs/.gitkeep
