@@ -18,6 +18,7 @@ class TestModels(unittest.TestCase):
                 ).fetchall()
 
             table_names = {row[0] for row in rows}
+            self.assertIn("exams", table_names)
             self.assertIn("students", table_names)
             self.assertIn("answer_keys", table_names)
             self.assertIn("exam_attempts", table_names)

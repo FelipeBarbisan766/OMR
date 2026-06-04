@@ -3,6 +3,17 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from backend.constants import (
+    BUBBLE_RADIUS_PX,
+    COL_GAP_PX,
+    CONFIDENCE_THRESHOLD,
+    ROW_GAP_PX,
+    WARP_HEIGHT_PX,
+    WARP_WIDTH_PX,
+    BUBBLE_START_X_PX,
+    BUBBLE_START_Y_PX,
+)
+
 
 def _order_points(pts):
     import numpy as np
@@ -34,10 +45,9 @@ def _warp_from_aruco(image):
         points.append(marker_corners[0].mean(axis=0))
 
     src = _order_points(np.array(points, dtype="float32"))
-    width, height = 1240, 1754
-    dst = np.array([[0, 0], [width, 0], [width, height], [0, height]], dtype="float32")
+    dst = np.array([[0, 0], [WARP_WIDTH_PX, 0], [WARP_WIDTH_PX, WARP_HEIGHT_PX], [0, WARP_HEIGHT_PX]], dtype="float32")
     matrix = cv2.getPerspectiveTransform(src, dst)
-    return cv2.warpPerspective(image, matrix, (width, height))
+    return cv2.warpPerspective(image, matrix, (WARP_WIDTH_PX, WARP_HEIGHT_PX))
 
 
 def detect_answers(image_path: str | Path, num_questions: int = 10, choices: int = 5) -> list[str]:
@@ -54,11 +64,11 @@ def detect_answers(image_path: str | Path, num_questions: int = 10, choices: int
     warped = _warp_from_aruco(image)
     _, binary = cv2.threshold(warped, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
-    start_x = 295
-    start_y = 1030
-    row_gap = 62
-    col_gap = 84
-    radius = 20
+    start_x = BUBBLE_START_X_PX
+    start_y = BUBBLE_START_Y_PX
+    row_gap = ROW_GAP_PX
+    col_gap = COL_GAP_PX
+    radius = BUBBLE_RADIUS_PX
 
     answers = []
     for q in range(num_questions):
@@ -73,7 +83,7 @@ def detect_answers(image_path: str | Path, num_questions: int = 10, choices: int
 
         best_idx = int(np.argmax(fill_scores))
         sorted_scores = sorted(fill_scores, reverse=True)
-        if len(sorted_scores) > 1 and sorted_scores[0] < sorted_scores[1] * 1.12:
+        if len(sorted_scores) > 1 and sorted_scores[0] < sorted_scores[1] * CONFIDENCE_THRESHOLD:
             answers.append("?")
         else:
             answers.append(chr(ord("A") + best_idx))
