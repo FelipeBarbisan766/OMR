@@ -12,6 +12,7 @@ from backend.constants import (
     COL_GAP_MM,
     ROW_GAP_MM,
 )
+from backend.exceptions import ValidationError
 
 
 def _aruco_png_bytes(marker_id: int, size_px: int = 300) -> bytes:
@@ -49,7 +50,7 @@ def generate_answer_sheet(
     # Check that grid doesn't overflow page
     max_y_px = BUBBLE_START_Y_FROM_TOP_MM + (num_questions - 1) * ROW_GAP_MM
     if max_y_px > 280:  # Leave 17mm margin at bottom
-        raise ValueError(
+        raise ValidationError(
             f"Grid would overflow page: {num_questions} questions need "
             f"{max_y_px}mm height (max 280mm available)"
         )

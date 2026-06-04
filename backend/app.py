@@ -5,6 +5,7 @@ from pathlib import Path
 from flask import Flask, jsonify, request, send_from_directory
 from werkzeug.utils import secure_filename
 
+from backend.exceptions import ValidationError
 from backend.models import DEFAULT_DB_PATH, initialize_db
 from backend.omr import detect_answers
 from backend.pdf_gen import generate_answer_sheet
@@ -42,10 +43,11 @@ def create_app() -> Flask:
             # Return only the filename, not the full path
             filename = Path(path).name
             return jsonify({"file": filename, "url": f"/api/download/{filename}"})
-        except ValueError as e:
-            return jsonify({"error": str(e)}), 400
-        except Exception as e:
-            return jsonify({"error": "Erro ao gerar folha de respostas", "details": str(e)}), 500
+        except ValidationError as e:
+            error_msg = e.get_user_message()
+            return jsonify({"error": error_msg}), 400
+        except Exception:
+            return jsonify({"error": "Erro ao gerar folha de respostas"}), 500
 
     @app.get("/api/download/<filename>")
     def download_file(filename):
@@ -60,8 +62,8 @@ def create_app() -> Flask:
                 return jsonify({"error": "Arquivo não encontrado"}), 404
 
             return send_from_directory(OUTPUT_DIR, filename, as_attachment=True)
-        except Exception as e:
-            return jsonify({"error": "Erro ao baixar arquivo", "details": str(e)}), 500
+        except Exception:
+            return jsonify({"error": "Erro ao baixar arquivo"}), 500
 
     @app.post("/api/process-image")
     def process_image():
@@ -86,13 +88,13 @@ def create_app() -> Flask:
 
             answers = detect_answers(saved_path, num_questions=num_questions)
             return jsonify({"answers": answers, "image": filename})
-        except RuntimeError as e:
+        except RuntimeError:
             # ArUco detection failed or other runtime error
-            return jsonify({"error": "Erro ao detectar marcadores ou respostas", "details": str(e)}), 400
-        except FileNotFoundError as e:
-            return jsonify({"error": "Imagem não encontrada", "details": str(e)}), 400
-        except Exception as e:
-            return jsonify({"error": "Erro ao processar imagem", "details": str(e)}), 500
+            return jsonify({"error": "Erro ao detectar marcadores ou respostas"}), 400
+        except FileNotFoundError:
+            return jsonify({"error": "Imagem não encontrada"}), 400
+        except Exception:
+            return jsonify({"error": "Erro ao processar imagem"}), 500
 
     @app.get("/")
     def root():
