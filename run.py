@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import threading
 import time
-import webbrowser
 
 from backend.app import create_app
 
@@ -17,7 +16,7 @@ def main() -> None:
     thread.start()
 
     time.sleep(1)
-    webbrowser.open("http://127.0.0.1:5000")
+    print("OMR API executando em http://127.0.0.1:5000")
     thread.join()
 
 

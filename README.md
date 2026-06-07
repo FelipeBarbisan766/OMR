@@ -13,8 +13,7 @@ omr-system/
 │   ├── models.py
 │   └── database.db
 ├── frontend/
-│   ├── index.html
-│   └── pages/
+│   └── OMRDesktopApp.java
 ├── uploads/
 ├── outputs/
 └── run.py
@@ -26,13 +25,21 @@ omr-system/
    - Flask
    - opencv-contrib-python
    - reportlab
-2. Rode:
+2. Rode a API local:
 
 ```bash
 python run.py
 ```
 
-O app sobe em `localhost:5000`, abre no navegador local e encerra junto com o processo.
+3. Em outro terminal, compile e execute o frontend Java:
+
+```bash
+cd frontend
+javac OMRDesktopApp.java
+java OMRDesktopApp
+```
+
+A API sobe em `localhost:5000` e o frontend roda como app desktop Java.
 
 ## Validação do motor OMR antes da interface
 

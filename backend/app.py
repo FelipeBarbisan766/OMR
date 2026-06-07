@@ -13,11 +13,10 @@ from backend.pdf_gen import generate_answer_sheet
 ROOT_DIR = Path(__file__).resolve().parents[1]
 UPLOAD_DIR = ROOT_DIR / "uploads"
 OUTPUT_DIR = ROOT_DIR / "outputs"
-FRONTEND_DIR = ROOT_DIR / "frontend"
 
 
 def create_app() -> Flask:
-    app = Flask(__name__, static_folder=str(FRONTEND_DIR), static_url_path="")
+    app = Flask(__name__)
 
     initialize_db(DEFAULT_DB_PATH)
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -98,7 +97,7 @@ def create_app() -> Flask:
 
     @app.get("/")
     def root():
-        return send_from_directory(FRONTEND_DIR, "index.html")
+        return jsonify({"status": "ok", "message": "OMR API local em execução"})
 
     return app
 
